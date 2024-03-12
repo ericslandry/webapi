@@ -1,0 +1,33 @@
+version: '3'
+
+tasks:
+  build:
+    cmds:
+      - go generate ./api/api.go
+      - go build -o bin/myapiserver ./cmd/server
+
+  docker:
+    cmds:
+      - docker build -t myapiserver .
+
+  clean:
+    cmds:
+      - rm -rf bin
+
+  test:
+    cmds:
+      - go test -v ./...
+
+  run:
+    cmds:
+      - go run ./cmd/myapiserver
+
+  kill:
+    cmds:
+      - pkill myapiserver
+
+  default:
+    desc: "Build and Test"
+    cmds:
+      - task: build
+      - task: test
