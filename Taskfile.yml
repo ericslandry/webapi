@@ -4,27 +4,34 @@ vars:
   APPNAME: myapiserver
   VERSION:
     sh: git describe --tags --always --dirty="-dev"
-  IMGNAME: ghcr.io/ericslandry/{{.APPNAME}}:{{.VERSION}}
+  VERSION_SHORT:
+    sh: git describe --tags --always --dirty="-dev" --abbrev=0
+  IMGNAME: ghcr.io/erislandry/{{.APPNAME}}
+  IMGLONG: "{{.IMGNAME}}:{{.VERSION}}"
+  IMGSHORT: "{{.IMGNAME}}:{{.VERSION_SHORT}}"
+  IMGLATEST: "{{.IMGNAME}}:latest"
 
 tasks:
+  clean:
+    cmds:
+      - rm -rf bin
+      - docker image prune -af
+
   build:
     cmds:
+      - task: clean
       - go generate ./api/api.go
       - go build -ldflags "-w -X main.version={{.VERSION}}" -o bin/{{.APPNAME}} ./cmd/{{.APPNAME}}
 
   docker-build:
     cmds:
       - task: build
-      - docker buildx build . -t {{.IMGNAME}} --build-arg APPNAME={{.APPNAME}}
+      - docker buildx build . --build-arg APPNAME={{.APPNAME}} -t {{.IMGLONG}} -t {{.IMGSHORT}} -t {{.IMGLATEST}}
 
   docker-push:
     cmds:
       - task: docker-build
-      - docker push {{.IMGNAME}}
-
-  clean:
-    cmds:
-      - rm -rf bin
+      - docker push --all-tags {{.IMGNAME}}
 
   test:
     cmds:
