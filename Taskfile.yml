@@ -15,7 +15,7 @@ tasks:
   docker-build:
     cmds:
       - task: build
-      - docker build . -t {{.IMGNAME}} --build-arg APPNAME={{.APPNAME}}
+      - docker buildx build . -t {{.IMGNAME}} --build-arg APPNAME={{.APPNAME}}
 
   docker-push:
     cmds:
