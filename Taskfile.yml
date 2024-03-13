@@ -1,12 +1,15 @@
 version: '3'
 
+env:
+  CR_PAT: "{{.CR_PAT}}"
+
 vars:
   APPNAME: myapiserver
   VERSION:
     sh: git describe --tags --always --dirty="-dev"
   VERSION_SHORT:
     sh: git describe --tags --always --dirty="-dev" --abbrev=0
-  IMGNAME: ghcr.io/erislandry/{{.APPNAME}}
+  IMGNAME: ghcr.io/ericslandry/{{.APPNAME}}
   IMGLONG: "{{.IMGNAME}}:{{.VERSION}}"
   IMGSHORT: "{{.IMGNAME}}:{{.VERSION_SHORT}}"
   IMGLATEST: "{{.IMGNAME}}:latest"
@@ -31,6 +34,12 @@ tasks:
   docker-push:
     cmds:
       - task: docker-build
+      - |
+        if [ -z "${CR_PAT}" ]; then
+          echo "Error: CR_PAT environment variable is not set. Please set it to proceed.";
+          exit 1;
+        fi
+      - echo $CR_PAT | docker login ghcr.io -u erislandry --password-stdin
       - docker push --all-tags {{.IMGNAME}}
 
   test:
