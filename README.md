@@ -15,7 +15,7 @@ This repository contains a Go web service example project that is meant to be ra
    ```
 2. Open the repository in VSCode:
    ```shell
-   code grpc
+   code webapi
    ```
 3. Reopen the repository in a container:
       - Click on the green icon in the bottom left corner of the window and select `Reopen in Container`.

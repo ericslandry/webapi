@@ -1,7 +1,8 @@
 version: '3'
 
 env:
-  CR_PAT: "{{.CR_PAT}}"
+  GHCR_USER: '{{.GHCR_USER | default "ericslandry"}}'
+  GHCR_TOKEN: "{{.GHCR_TOKEN}}"
 
 vars:
   APPNAME: myapiserver
@@ -9,7 +10,7 @@ vars:
     sh: git describe --tags --always --dirty="-dev"
   VERSION_SHORT:
     sh: git describe --tags --always --dirty="-dev" --abbrev=0
-  IMGNAME: ghcr.io/ericslandry/{{.APPNAME}}
+  IMGNAME: "ghcr.io/{{.GHCR_USER}}/{{.APPNAME}}"
   IMGLONG: "{{.IMGNAME}}:{{.VERSION}}"
   IMGSHORT: "{{.IMGNAME}}:{{.VERSION_SHORT}}"
   IMGLATEST: "{{.IMGNAME}}:latest"
@@ -29,17 +30,22 @@ tasks:
   docker-build:
     cmds:
       - task: build
+      - |
+        if [ -z "$GHCR_USER" ]; then
+          echo "GHCR_USER is not set"
+          exit 1
+        fi
       - docker buildx build . --build-arg APPNAME={{.APPNAME}} -t {{.IMGLONG}} -t {{.IMGSHORT}} -t {{.IMGLATEST}}
 
   docker-push:
     cmds:
       - task: docker-build
       - |
-        if [ -z "${CR_PAT}" ]; then
-          echo "Error: CR_PAT environment variable is not set. Please set it to proceed.";
-          exit 1;
+        if [ -z "$GHCR_TOKEN" ]; then
+          echo "GHCR_TOKEN is not set"
+          exit 1
         fi
-      - echo $CR_PAT | docker login ghcr.io -u erislandry --password-stdin
+      - docker login ghcr.io -u {{.GHCR_USER}} --password-stdin <<< "$GHCR_TOKEN"
       - docker push --all-tags {{.IMGNAME}}
 
   test:
