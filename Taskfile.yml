@@ -1,14 +1,26 @@
 version: '3'
 
+vars:
+  APPNAME: myapiserver
+  VERSION:
+    sh: git describe --tags --always --dirty="-dev"
+  IMGNAME: ghcr.io/ericslandry/{{.APPNAME}}:{{.VERSION}}
+
 tasks:
   build:
     cmds:
       - go generate ./api/api.go
-      - go build -o bin/myapiserver ./cmd/server
+      - go build -ldflags "-w -X main.version={{.VERSION}}" -o bin/{{.APPNAME}} ./cmd/{{.APPNAME}}
 
-  docker:
+  docker-build:
     cmds:
-      - docker build -t myapiserver .
+      - task: build
+      - docker build . -t {{.IMGNAME}} --build-arg APPNAME={{.APPNAME}}
+
+  docker-push:
+    cmds:
+      - task: docker-build
+      - docker push {{.IMGNAME}}
 
   clean:
     cmds:
@@ -20,11 +32,11 @@ tasks:
 
   run:
     cmds:
-      - go run ./cmd/myapiserver
+      - go run ./cmd/{{.APPNAME}}
 
   kill:
     cmds:
-      - pkill myapiserver
+      - pkill {{.APPNAME}}
 
   default:
     desc: "Build and Test"
