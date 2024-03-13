@@ -29,8 +29,8 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GHCR_TOKEN }}
 
-    - name: Build and run Dev Container task
+    - name: Build and push docker image using devcontainer
       uses: devcontainers/ci@v0.3
       with:
-        imageName: ghcr.io/${{ github.repository }}-devcontainer
+        cacheFrom: ghcr.io/${{ github.repository }}-devcontainer
         runCmd: task docker-push

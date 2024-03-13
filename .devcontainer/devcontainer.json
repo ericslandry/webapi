@@ -7,7 +7,6 @@
 		"ghcr.io/eitsupi/devcontainer-features/go-task:1": {},
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
 	},
-	"postCreateCommand": ".devcontainer/post-create.sh",
 	"customizations": {
 		"vscode": {
 			"extensions": [
