@@ -12,7 +12,9 @@
 			"extensions": [
 				"task.vscode-task",
 				"golang.go",
-				"redhat.vscode-yaml"
+				"redhat.vscode-yaml",
+				"github.vscode-github-actions",
+				"ms-azuretools.vscode-docker"
 			]
 		}
 	}
