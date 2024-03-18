@@ -38,7 +38,7 @@ jobs:
         imageName: ghcr.io/${{ github.repository }}-devcontainer
         skipContainerUserIdUpdate: true
         push: always
-        runCmd: echo "Image built successfully."
+        runCmd: echo "Image built successfully"
 
   build-application:
     needs: build-devcontainer
