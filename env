@@ -1,0 +1,4 @@
+# This is a template for the environment variables. Copy this file to `.env` and fill in the values.
+GHCR_USER: "<your-ghcr-username>"
+# https://github.com/settings/tokens
+GHCR_TOKEN: "<your-ghcr-token>"

@@ -1,8 +1,6 @@
 version: '3'
 
-env:
-  GHCR_USER: '{{.GHCR_USER | default "ericslandry"}}'
-  GHCR_TOKEN: "{{.GHCR_TOKEN}}"
+dotenv: ['.env']
 
 vars:
   APPNAME: myapiserver
@@ -19,13 +17,15 @@ tasks:
   clean:
     cmds:
       - rm -rf bin
-      - docker image prune -af
+      - docker kill $(docker ps --quiet) || true
+      - docker container prune -f
 
   build:
     cmds:
       - task: clean
       - go generate ./api/api.go
       - go build -ldflags "-w -X main.version={{.VERSION}}" -o bin/{{.APPNAME}} ./cmd/{{.APPNAME}}
+      - go test -v ./...
 
   docker-build:
     cmds:
@@ -37,31 +37,37 @@ tasks:
         fi
       - docker buildx build . --build-arg APPNAME={{.APPNAME}} -t {{.IMGLONG}} -t {{.IMGSHORT}} -t {{.IMGLATEST}}
 
-  docker-push:
+  docker-ghcr-login:
+    # https://github.com/go-task/task/issues/1038
+    env:
+      GHCR_USER: "{{.GHCR_USER}}"
+      GHCR_TOKEN: "{{.GHCR_TOKEN}}"
     cmds:
-      - task: docker-build
       - |
         if [ -z "$GHCR_TOKEN" ]; then
           echo "GHCR_TOKEN is not set"
           exit 1
         fi
       - docker login ghcr.io -u {{.GHCR_USER}} --password-stdin <<< "$GHCR_TOKEN"
+
+  docker-push:
+    cmds:
+      - task: docker-build
+      - task: docker-ghcr-login
       - docker push --all-tags {{.IMGNAME}}
 
-  test:
+  docker-plow:
     cmds:
-      - go test -v ./...
+      - task: docker-build
+      - docker run -d -p 8080:8080 {{.IMGLONG}}
+      - task: docker-ghcr-login
+      - docker run --rm --net=host ghcr.io/six-ddc/plow http://localhost:8080/hello -c 20
 
-  run:
+  lint: # WIP
     cmds:
-      - go run ./cmd/{{.APPNAME}}
-
-  kill:
-    cmds:
-      - pkill {{.APPNAME}}
+      - task: docker-ghcr-login
+      - docker run -e LOG_LEVEL=DEBUG -e RUN_LOCAL=true -v .:/tmp/lint ghcr.io/super-linter/super-linter:latest
 
   default:
-    desc: "Build and Test"
     cmds:
-      - task: build
-      - task: test
+      - task: docker-plow

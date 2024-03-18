@@ -1,8 +1,6 @@
 FROM alpine:latest
-RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates libc6-compat
 WORKDIR /app
-ARG APPNAME
-ENV APPNAME=${APPNAME}
-COPY bin/${APPNAME} .
+COPY bin/myapiserver .
 EXPOSE 8080
-CMD ["./${APPNAME}"]
+CMD ["./myapiserver"]
