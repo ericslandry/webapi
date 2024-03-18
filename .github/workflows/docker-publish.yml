@@ -71,5 +71,5 @@ jobs:
 #        GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
 #      with:
 #        cacheFrom: ghcr.io/${{ github.repository }}-devcontainer
+#        push: never
 #        runCmd: task docker-push
-#
