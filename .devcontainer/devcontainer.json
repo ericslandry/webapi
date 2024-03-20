@@ -1,8 +1,8 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/go
 {
-	"name": "Go",
-	"image": "mcr.microsoft.com/devcontainers/go:1-1.22-bullseye",
+	"name": "Go Web API Development Container",
+	"image": "mcr.microsoft.com/devcontainers/go",
 	"features": {
 		"ghcr.io/eitsupi/devcontainer-features/go-task:1": {},
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {}

@@ -20,6 +20,19 @@ tasks:
       - docker kill $(docker ps --quiet) || true
       - docker container prune -f
 
+  login:
+    # The .env file supports the local development environment
+    # To avoid GH Actions needing to create a .env file, we allow for env vars override here
+    # If only this was fixed..sigh https://github.com/go-task/task/issues/1038
+    env:
+      DHCR_USER: "{{.DHCR_USER}}"
+      DHCR_TOKEN: "{{.DHCR_TOKEN}}"
+      GHCR_USER: "{{.GHCR_USER}}"
+      GHCR_TOKEN: "{{.GHCR_TOKEN}}"
+    cmds:
+      - docker login -u {{.DHCR_USER}} --password-stdin <<< "$DHCR_TOKEN"
+      - docker login ghcr.io -u {{.GHCR_USER}} --password-stdin <<< "$GHCR_TOKEN"
+
   build:
     cmds:
       - task: clean
@@ -30,44 +43,31 @@ tasks:
   docker-build:
     cmds:
       - task: build
+      - task: login
       - |
-        if [ -z "$GHCR_USER" ]; then
-          echo "GHCR_USER is not set"
-          exit 1
-        fi
-      - docker buildx build . --build-arg APPNAME={{.APPNAME}} -t {{.IMGLONG}} -t {{.IMGSHORT}} -t {{.IMGLATEST}}
+        docker build . \
+        --build-arg APPNAME={{.APPNAME}} \
+        --build-arg VERSION={{.VERSION}} \
+        -t {{.IMGLONG}} \
+        -t {{.IMGSHORT}} \
+        -t {{.IMGLATEST}}
 
-  docker-ghcr-login:
-    # https://github.com/go-task/task/issues/1038
-    env:
-      GHCR_USER: "{{.GHCR_USER}}"
-      GHCR_TOKEN: "{{.GHCR_TOKEN}}"
+  push:
     cmds:
-      - |
-        if [ -z "$GHCR_TOKEN" ]; then
-          echo "GHCR_TOKEN is not set"
-          exit 1
-        fi
-      - docker login ghcr.io -u {{.GHCR_USER}} --password-stdin <<< "$GHCR_TOKEN"
-
-  docker-push:
-    cmds:
-      - task: docker-build
-      - task: docker-ghcr-login
+      - task: build
       - docker push --all-tags {{.IMGNAME}}
 
-  docker-plow:
+  bench:
     cmds:
-      - task: docker-build
-      - docker run -d -p 8080:8080 {{.IMGLONG}}
-      - task: docker-ghcr-login
+      - task: login
+      - docker run -d -p 8080:8080 {{.IMGLATEST}}
       - docker run --rm --net=host ghcr.io/six-ddc/plow http://localhost:8080/hello -c 20
 
   lint: # WIP
     cmds:
-      - task: docker-ghcr-login
+      - task: login
       - docker run -e LOG_LEVEL=DEBUG -e RUN_LOCAL=true -v .:/tmp/lint ghcr.io/super-linter/super-linter:latest
 
   default:
     cmds:
-      - task: docker-plow
+      - task: bench

@@ -1,4 +1,11 @@
 # This is a template for the environment variables. Copy this file to `.env` and fill in the values.
+
+# GitHub Container Registry
 GHCR_USER: "<your-ghcr-username>"
 # https://github.com/settings/tokens
 GHCR_TOKEN: "<your-ghcr-token>"
+
+# Docker Hub Container Registry
+DHCR_USER: "<your-dhcr-username>"
+# https://hub.docker.com/settings/security
+DHCR_TOKEN: "<your-dhcr-token>"
