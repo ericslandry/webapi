@@ -3,7 +3,8 @@ version: '3'
 dotenv: ['.env']
 
 vars:
-  APPNAME: myapiserver
+  APPNAME:
+    sh: basename $(git rev-parse --show-toplevel)
   VERSION:
     sh: git describe --tags --always --dirty="-dev"
   VERSION_SHORT:
@@ -63,7 +64,7 @@ tasks:
       - docker run -d -p 8080:8080 {{.IMGLATEST}}
       - docker run --rm --net=host ghcr.io/six-ddc/plow http://localhost:8080/hello -c 20
 
-  lint: # WIP
+  lint: # WIP - this image is 6GB!!
     cmds:
       - task: login
       - docker run -e LOG_LEVEL=DEBUG -e RUN_LOCAL=true -v .:/tmp/lint ghcr.io/super-linter/super-linter:latest
