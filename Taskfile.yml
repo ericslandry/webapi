@@ -3,13 +3,11 @@ version: '3'
 dotenv: ['.env']
 
 vars:
-  APPNAME:
-    sh: basename $(git rev-parse --show-toplevel)
   VERSION:
     sh: git describe --tags --always --dirty="-dev"
   VERSION_SHORT:
     sh: git describe --tags --always --dirty="-dev" --abbrev=0
-  IMGNAME: "ghcr.io/{{.GHCR_USER}}/{{.APPNAME}}"
+  IMGNAME: "ghcr.io/{{.GHCR_USER}}/webapi"
   IMGLONG: "{{.IMGNAME}}:{{.VERSION}}"
   IMGSHORT: "{{.IMGNAME}}:{{.VERSION_SHORT}}"
   IMGLATEST: "{{.IMGNAME}}:latest"
@@ -38,7 +36,7 @@ tasks:
     cmds:
       - task: clean
       - go generate ./api/api.go
-      - go build -ldflags "-w -X main.version={{.VERSION}}" -o bin/{{.APPNAME}} ./cmd/{{.APPNAME}}
+      - go build -ldflags "-w -X main.version={{.VERSION}}" -o bin/webapi ./cmd/webapi/
       - go test -v ./...
 
   docker-build:
@@ -47,7 +45,6 @@ tasks:
       - task: login
       - |
         docker build . \
-        --build-arg APPNAME={{.APPNAME}} \
         --build-arg VERSION={{.VERSION}} \
         -t {{.IMGLONG}} \
         -t {{.IMGSHORT}} \
