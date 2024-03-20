@@ -7,7 +7,7 @@ COPY . ./
 ENV CGO_ENABLED=0
 ENV GOOS=linux
 ENV GOARCH=amd64
-RUN go build -x -ldflags "-w -X main.version=${VERSION}" -o bin/webapi ./cmd/webapi/
+RUN go build -ldflags "-w -X main.version=${VERSION}" -o bin/webapi ./cmd/webapi/
 
 FROM alpine
 RUN apk --no-cache add ca-certificates libc6-compat
