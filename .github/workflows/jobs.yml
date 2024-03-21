@@ -40,6 +40,24 @@ jobs:
     #    username: ${{ secrets.GHCR_USER }}
     #    password: ${{ secrets.GHCR_TOKEN }}
 
+    - name: Build and export to Docker
+      uses: docker/build-push-action@v5
+      with:
+        push: false
+        load: true # Export to Docker Engine rather than pushing to a registry
+        tags: ${{ github.run_id }}
+        target: test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64
+
+    - name: Run Trivy for all CVEs (non-blocking)
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ github.run_id }}
+        format: table 
+        exit-code: 0
+
     - name: Run Trivy for HIGH,CRITICAL CVEs and report (blocking)
       uses: aquasecurity/trivy-action@master
       with:
